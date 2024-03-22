@@ -20,6 +20,7 @@ function App() {
   const [op, setOp] = useState('')
   const [isloadind, setIsLoading] = useState(false)
   const [mensaje, setMensaje] = useState('')
+  const [ title, setTitle] =  useState('')
 
   const getCategorias = async () => {
     const url = "https://api.escuelajs.co/api/v1/categories"
@@ -33,9 +34,12 @@ function App() {
 
   const openModal = (operacion, id, name, image) => {
     if (operacion === 1) {
+      setOp(operacion)
+      setTitle('Añadir Categoria')
       setName('')
       setImage('')
-    } else {
+    } else if(operacion === 2) {
+      setTitle('Editar Categoria')
       setOp(operacion)
       setId(id)
       setName(name)
@@ -72,11 +76,14 @@ function App() {
         const url = "https://api.escuelajs.co/api/v1/categories/"
         const data = { name: name, image: image }
         try {
+          setIsLoading(true)
           await axios.post(url, data)
-          console.log("Publicacion Exitosa")
+          setMensaje('Publicacion Exitosa')
           setContador(contador + 1)
         } catch (err) {
           console.error(err)
+        }finally{
+          setIsLoading(false)
         }
       }
     }
@@ -84,6 +91,7 @@ function App() {
 
   const cloceModal = () => {
     setMensaje('')
+    setTitle('')
   }
 
   const deleteCategory = (id) => {
@@ -144,23 +152,23 @@ function App() {
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+              <h1 className="modal-title fs-5" id="exampleModalLabel">{title}</h1>
               <button type="button" className="btn-close" onClick={() => cloceModal()} data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
               <div className="mb-3 input-group">
                 <span className="input-group-text" id="basic-addon1"><FaMarker /></span>
-                <input type="text" className="form-control" id="nombre" value={name} onChange={(e) => setName(e.target.value)} />
+                <input type="text" placeholder='Nombre de la categoria' className="form-control" id="nombre" value={name} onChange={(e) => setName(e.target.value)} />
               </div>
               <div className="mb-3 input-group">
                 <span className="input-group-text" id="basic-addon1"><BsCardImage /></span>
-                <input type="text" className="form-control" id="urlImagen" value={image} onChange={(e) => setImage(e.target.value)} />
+                <input type="text" placeholder='url de la imagen .jpg, .png' className="form-control" id="urlImagen" value={image} onChange={(e) => setImage(e.target.value)} />
               </div>
             </div>
             {
               isloadind ? (
                 <div className="d-flex text-info justify-content-center mb-3">
-                  <div className="spinner-border" role="status">
+                  <div className="spinner-border text-info" role="status">
                     <span className="visually-hidden"></span>
                   </div>
                 </div>
