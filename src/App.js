@@ -6,6 +6,9 @@ import { BsCardImage } from 'react-icons/bs'
 import { FaPenToSquare } from "react-icons/fa6";
 import { FaTrashCan } from "react-icons/fa6";
 import { FaMarker } from "react-icons/fa6";
+import { alertaWarning } from './funcionAlert.js';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 // url = https://api.escuelajs.co/api/v1/categories
 
 function App() {
@@ -42,37 +45,65 @@ function App() {
 
   const enviar = async () => {
     if (op === 2) {
-      const url = `https://api.escuelajs.co/api/v1/categories/${id}`
-      const data = {
-        name: name,
-        image: image
-      }
-      try {
-        setIsLoading(true)
-        await axios.put(url, data)
-        setContador(contador + 1)   
-        setMensaje("Actulizado!")
-      } catch (err) {
-        console.error(err, "No se puede modificar las categorias por defecto!")
-      }finally{
-        setIsLoading(false)
+      if (name === '') {
+        alertaWarning('Completa el campo nombre', 'nombre')
+      } else if (image === '') {
+        alertaWarning('Ingresa la url de la imagen', 'urlImagen')
+      } else {
+        const url = `https://api.escuelajs.co/api/v1/categories/${id}`
+        const data = { name: name, image: image }
+        try {
+          setIsLoading(true)
+          await axios.put(url, data)
+          setContador(contador + 1)
+          setMensaje("Actulizado!")
+        } catch (err) {
+          console.error(err, "No se puede modificar las categorias por defecto!")
+        } finally {
+          setIsLoading(false)
+        }
       }
     } else {
-      const url = "https://api.escuelajs.co/api/v1/categories/"
-      const data = { name: name, image: image }
-
-      try {
-        await axios.post(url, data)
-        console.log("Publicacion Exitosa")
-        setContador(contador + 1)
-      } catch (err) {
-        console.error(err)
+      if (name === '') {
+        alertaWarning('Completa el campo nombre', 'nombre')
+      } else if (image === '') {
+        alertaWarning('Ingresa la url de la imagen', 'urlImagen')
+      } else {
+        const url = "https://api.escuelajs.co/api/v1/categories/"
+        const data = { name: name, image: image }
+        try {
+          await axios.post(url, data)
+          console.log("Publicacion Exitosa")
+          setContador(contador + 1)
+        } catch (err) {
+          console.error(err)
+        }
       }
     }
   }
 
   const cloceModal = () => {
     setMensaje('')
+  }
+
+  const deleteCategory = (id) => {
+    const url = `https://api.escuelajs.co/api/v1/categories/${id}`
+
+    const MySwal = withReactContent(Swal)
+    MySwal.fire({
+      title: 'Estas seguro de eliminar esta categoria?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'si, Eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        await  axios.delete(url)
+        setContador(contador + 1)
+      }
+    }).catch((error) => {
+      console.log(error)
+    })
   }
 
   return (
@@ -99,7 +130,7 @@ function App() {
                     <h5 className="card-title">{item.name}</h5>
                     <div className="d-grid gap-2 d-md-flex">
                       <button className="btn btn-warning" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={() => openModal(2, item.id, item.name, item.image)} type="button"><FaPenToSquare /></button>
-                      <button className="btn btn-danger" type="button"><FaTrashCan /></button>
+                      <button className="btn btn-danger" onClick={() => deleteCategory(item.id)} type="button"><FaTrashCan /></button>
                     </div>
                   </div>
                 </div>
@@ -133,12 +164,12 @@ function App() {
                     <span className="visually-hidden"></span>
                   </div>
                 </div>
-              ):(
+              ) : (
                 <div className='text-black text-center mb-3'>{mensaje}</div>
               )
             }
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={()=>cloceModal()} data-bs-dismiss="modal">Cerrar</button>
+              <button type="button" className="btn btn-secondary" onClick={() => cloceModal()} data-bs-dismiss="modal">Cerrar</button>
               <button type="button" className="btn btn-primary" onClick={() => enviar()}>Guardar</button>
             </div>
           </div>
